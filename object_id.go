@@ -12,14 +12,14 @@ func NewStringID() string {
 	return NewObjectID().Hex()
 }
 
-// ConvertFromString ...
-func ConvertFromString(s string) (value primitive.ObjectID, isValid bool) {
+// NewIDFromString ...
+func NewIDFromString(s string) (value primitive.ObjectID, isValid bool) {
 	id, err := primitive.ObjectIDFromHex(s)
 	return id, err == nil
 }
 
-// IsValid ...
-func IsValid(s string) bool {
+// IsValidID ...
+func IsValidID(s string) bool {
 	return primitive.IsValidObjectID(s)
 }
 
