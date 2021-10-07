@@ -13,15 +13,12 @@ import (
 
 // CreateIndex ...
 func CreateIndex(colName string, ind mongo.IndexModel) {
-	fmt.Println("db name:", db.Name())
 	// Get collection
 	col := db.Collection(colName)
 	if col == nil {
 		fmt.Printf("Collection %s not existed", colName)
 		return
 	}
-
-	fmt.Println("ind", ind)
 
 	opts := options.CreateIndexes().SetMaxTime(time.Minute * 10)
 	_, err := col.Indexes().CreateOne(context.Background(), ind, opts)
