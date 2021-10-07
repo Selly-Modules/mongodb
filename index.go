@@ -13,6 +13,7 @@ import (
 
 // CreateIndex ...
 func CreateIndex(colName string, ind mongo.IndexModel) {
+	fmt.Println("db name:", db.Name())
 	// Get collection
 	col := db.Collection(colName)
 	if col == nil {
