@@ -20,6 +20,8 @@ func CreateIndex(colName string, ind mongo.IndexModel) {
 		return
 	}
 
+	fmt.Println("ind", ind)
+
 	opts := options.CreateIndexes().SetMaxTime(time.Minute * 10)
 	_, err := col.Indexes().CreateOne(context.Background(), ind, opts)
 	if err != nil {
