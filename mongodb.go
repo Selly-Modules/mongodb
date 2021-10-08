@@ -12,7 +12,7 @@ import (
 var db *mongo.Database
 
 // Connect to mongo server
-func Connect(host, user, password, dbName, mechanism, source string) error {
+func Connect(host, user, password, dbName, mechanism, source string) (*mongo.Database, error) {
 	connectOptions := options.ClientOptions{}
 	// Set auth if existed
 	if user != "" && password != "" {
@@ -28,14 +28,14 @@ func Connect(host, user, password, dbName, mechanism, source string) error {
 	client, err := mongo.Connect(context.Background(), connectOptions.ApplyURI(host))
 	if err != nil {
 		fmt.Println("Error when connect to MongoDB database", host, err)
-		return err
+		return nil, err
 	}
 
 	fmt.Println(aurora.Green("*** CONNECTED TO MONGODB: " + host))
 
 	// Set data
 	db = client.Database(dbName)
-	return nil
+	return db, nil
 }
 
 // GetInstance ...
