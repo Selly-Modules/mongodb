@@ -25,6 +25,7 @@ type ConnectTLSOpts struct {
 	CaFile              string
 	CertKeyFile         string
 	CertKeyFilePassword string
+	ReadPreferenceMode  string
 }
 
 // ConnectStandaloneOpts ...
@@ -83,7 +84,7 @@ func connectWithTLS(cfg Config) (*mongo.Database, error) {
 	pwd := base64DecodeToString(opts.CertKeyFilePassword)
 	s := "%s/?tls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509"
 	uri := fmt.Sprintf(s, cfg.Host, caFile.Name(), certFile.Name(), pwd)
-	readPref := readpref.SecondaryPreferred()
+	readPref := getReadPref(opts.ReadPreferenceMode)
 	clientOpts := options.Client().SetReadPreference(readPref).SetReplicaSet(opts.ReplSet).ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
@@ -101,4 +102,16 @@ func connectWithTLS(cfg Config) (*mongo.Database, error) {
 // GetInstance ...
 func GetInstance() *mongo.Database {
 	return db
+}
+
+func getReadPref(mode string) *readpref.ReadPref {
+	m, err := readpref.ModeFromString(mode)
+	if err != nil {
+		m = readpref.SecondaryPreferredMode
+	}
+	readPref, err := readpref.New(m)
+	if err != nil {
+		fmt.Println("mongodb.getReadPref err: ", err, m)
+	}
+	return readPref
 }
