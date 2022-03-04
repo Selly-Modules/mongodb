@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/logrusorgru/aurora"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -12,8 +13,9 @@ import (
 
 // Config ...
 type Config struct {
-	Host   string
-	DBName string
+	Host    string
+	DBName  string
+	Monitor *event.CommandMonitor
 
 	TLS        *ConnectTLSOpts
 	Standalone *ConnectStandaloneOpts
@@ -86,6 +88,9 @@ func connectWithTLS(cfg Config) (*mongo.Database, error) {
 	uri := fmt.Sprintf(s, cfg.Host, caFile.Name(), certFile.Name(), pwd)
 	readPref := getReadPref(opts.ReadPreferenceMode)
 	clientOpts := options.Client().SetReadPreference(readPref).SetReplicaSet(opts.ReplSet).ApplyURI(uri)
+	if cfg.Monitor != nil {
+		clientOpts.SetMonitor(cfg.Monitor)
+	}
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return nil, err
