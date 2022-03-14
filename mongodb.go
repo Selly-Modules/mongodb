@@ -56,6 +56,9 @@ func Connect(cfg Config) (*mongo.Database, error) {
 			Password:      opts.Password,
 		}
 	}
+	if cfg.Monitor != nil {
+		connectOptions.SetMonitor(cfg.Monitor)
+	}
 
 	// Connect
 	client, err := mongo.Connect(context.Background(), connectOptions.ApplyURI(cfg.Host))
