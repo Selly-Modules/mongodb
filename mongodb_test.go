@@ -1,6 +1,7 @@
 package mongodb
 
 import (
+	"fmt"
 	"testing"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -41,6 +42,61 @@ func Test_connectWithTLS(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("connectWithTLS() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+		})
+	}
+}
+
+func Test_getURIWithTLS(t *testing.T) {
+	type args struct {
+		cfg          Config
+		caFilePath   string
+		certFilePath string
+		pwd          string
+	}
+	ca := "ca.pem"
+	cert := "cert.pem"
+	pwd := "1"
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "uri no options",
+			args: args{
+				cfg:          Config{Host: "mongodb://localhost:27017"},
+				caFilePath:   ca,
+				certFilePath: cert,
+				pwd:          pwd,
+			},
+			want: fmt.Sprintf("mongodb://localhost:27017/?tls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509", ca, cert, pwd),
+		},
+		{
+			name: "uri no options, end with /",
+			args: args{
+				cfg:          Config{Host: "mongodb://localhost:27017/"},
+				caFilePath:   ca,
+				certFilePath: cert,
+				pwd:          pwd,
+			},
+			want: fmt.Sprintf("mongodb://localhost:27017/?tls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509", ca, cert, pwd),
+		},
+		{
+			name: "uri has options",
+			args: args{
+				cfg:          Config{Host: "mongodb://localhost:27017/?a=1"},
+				caFilePath:   ca,
+				certFilePath: cert,
+				pwd:          pwd,
+			},
+			want: fmt.Sprintf("mongodb://localhost:27017/?a=1&tls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509", ca, cert, pwd),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := getURIWithTLS(tt.args.cfg, tt.args.caFilePath, tt.args.certFilePath, tt.args.pwd); got != tt.want {
+				t.Errorf("getURIWithTLS() = %v, want %v", got, tt.want)
 			}
 		})
 	}
