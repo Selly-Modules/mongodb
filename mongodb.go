@@ -3,6 +3,7 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/logrusorgru/aurora"
 	"go.mongodb.org/mongo-driver/event"
@@ -48,7 +49,7 @@ func Connect(cfg Config) (*mongo.Database, error) {
 	connectOptions := options.ClientOptions{}
 	opts := cfg.Standalone
 	// Set auth if existed
-	if opts.Username != "" && opts.Password != "" {
+	if opts != nil && opts.Username != "" && opts.Password != "" {
 		connectOptions.Auth = &options.Credential{
 			AuthMechanism: opts.AuthMechanism,
 			AuthSource:    opts.AuthSource,
@@ -87,8 +88,7 @@ func connectWithTLS(cfg Config) (*mongo.Database, error) {
 		return nil, err
 	}
 	pwd := base64DecodeToString(opts.CertKeyFilePassword)
-	s := "%s/?tls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509"
-	uri := fmt.Sprintf(s, cfg.Host, caFile.Name(), certFile.Name(), pwd)
+	uri := getURIWithTLS(cfg, caFile.Name(), certFile.Name(), pwd)
 	readPref := getReadPref(opts.ReadPreferenceMode)
 	clientOpts := options.Client().SetReadPreference(readPref).SetReplicaSet(opts.ReplSet).ApplyURI(uri)
 	if cfg.Monitor != nil {
@@ -105,6 +105,22 @@ func connectWithTLS(cfg Config) (*mongo.Database, error) {
 
 	fmt.Println(aurora.Green("*** CONNECTED TO MONGODB: " + cfg.Host + " --- DB: " + cfg.DBName))
 	return db, err
+}
+
+func getURIWithTLS(cfg Config, caFilePath, certFilePath, pwd string) string {
+	host := cfg.Host
+	if strings.Contains(host, "?") {
+		host += "&"
+	} else {
+		if !strings.HasSuffix(host, "/") {
+			host += "/?"
+		} else {
+			host += "?"
+		}
+	}
+	s := "%stls=true&tlsCAFile=./%s&tlsCertificateKeyFile=./%s&tlsCertificateKeyFilePassword=%s&authMechanism=MONGODB-X509"
+	uri := fmt.Sprintf(s, host, caFilePath, certFilePath, pwd)
+	return uri
 }
 
 // GetInstance ...
