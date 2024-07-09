@@ -6,7 +6,6 @@ import (
 	"unicode"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
@@ -15,7 +14,8 @@ import (
 // GenerateQuerySearchString ...
 func GenerateQuerySearchString(s string) bson.M {
 	return bson.M{
-		"$regex": bsonx.Regex(NonAccentVietnamese(s), "i"),
+		"$regex":   NonAccentVietnamese(s),
+		"$options": "i",
 	}
 }
 

@@ -3,12 +3,12 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
 // CreateIndex ...
@@ -29,16 +29,16 @@ func CreateIndex(colName string, ind mongo.IndexModel) {
 
 // NewIndexKey ...
 func NewIndexKey(key ...string) mongo.IndexModel {
-	var doc bsonx.Doc
+	var doc bson.D
 	for _, s := range key {
-		e := bsonx.Elem{
+		e := bson.E{
 			Key:   s,
-			Value: bsonx.Int32(1),
+			Value: 1,
 		}
 		if strings.HasPrefix(s, "-") {
-			e = bsonx.Elem{
+			e = bson.E{
 				Key:   strings.Replace(s, "-", "", 1),
-				Value: bsonx.Int32(-1),
+				Value: -1,
 			}
 		}
 		doc = append(doc, e)
