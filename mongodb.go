@@ -20,6 +20,7 @@ type Config struct {
 
 	TLS        *ConnectTLSOpts
 	Standalone *ConnectStandaloneOpts
+	MaxPool    int // default 200
 }
 
 // ConnectTLSOpts ...
@@ -60,6 +61,11 @@ func Connect(cfg Config) (*mongo.Database, error) {
 	if cfg.Monitor != nil {
 		connectOptions.SetMonitor(cfg.Monitor)
 	}
+
+	if cfg.MaxPool == 0 {
+		cfg.MaxPool = 200
+	}
+	connectOptions.SetMaxPoolSize(uint64(cfg.MaxPool))
 
 	// Connect
 	client, err := mongo.Connect(context.Background(), connectOptions.ApplyURI(cfg.Host))
